@@ -1,0 +1,83 @@
+# networks:
+#   cloud:
+
+# volumes:
+#   nextcloud:
+#   db:
+
+services:
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    container_name: heimdall
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /path/to/appdata/config:/config
+    ports:
+      - 80:80
+      - 443:443
+    restart: unless-stopped
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - JELLYFIN_PublishedServerUrl=192.168.0.5 #optional
+    volumes:
+      - ./filesystem/config/jellyfin:/config
+      - ./filesystem/media:/media
+    ports:
+      - 8000:8096
+      - 8920:8920 #optional
+      - 7359:7359/udp #optional
+      - 1900:1900/udp #optional
+    restart: unless-stopped
+
+  filebrowser:
+    image: filebrowser/filebrowser:s6
+    container_name: filebrowser
+    volumes:
+      - ./filesystem/config/filebrowser:/config
+      - ./filesystem/media:/srv
+    ports:
+      - 8001:80
+    restart: always
+
+  # db:
+  #   image: mariadb:10.6
+  #   restart: always
+  #   command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+  #   volumes:
+  #     - db:/var/lib/mysql
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=53121
+  #     - MYSQL_PASSWORD=53121
+  #     - MYSQL_DATABASE=nextcloud
+  #     - MYSQL_USER=nextcloud
+  #   networks:
+  #     - cloud
+
+  # cloud:
+  #   image: nextcloud
+  #   restart: always
+  #   ports:
+  #     - 8080:80
+  #   links:
+  #     - db
+  #   volumes:
+  #     - nextcloud:/var/www/html
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=53121
+  #     - MYSQL_PASSWORD=53121
+  #     - MYSQL_DATABASE=nextcloud
+  #     - MYSQL_USER=nextcloud
+  #     - MYSQL_HOST=db
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - cloud
