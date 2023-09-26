@@ -1,11 +1,13 @@
-# networks:
-#   cloud:
+networks:
+  metrics:
+    driver: bridge
 
-# volumes:
-#   nextcloud:
-#   db:
+secrets:
+   gf_admin_password:
+     file:./secrets/gf_admin_password.txt
 
 services:
+  # Homelab Dashboard
   heimdall:
     image: lscr.io/linuxserver/heimdall:latest
     container_name: heimdall
@@ -20,6 +22,7 @@ services:
       - 443:443
     restart: unless-stopped
 
+  # Services
   jellyfin:
     image: lscr.io/linuxserver/jellyfin:latest
     container_name: jellyfin
@@ -48,36 +51,28 @@ services:
       - 8001:80
     restart: always
 
-  # db:
-  #   image: mariadb:10.6
-  #   restart: always
-  #   command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
-  #   volumes:
-  #     - db:/var/lib/mysql
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=53121
-  #     - MYSQL_PASSWORD=53121
-  #     - MYSQL_DATABASE=nextcloud
-  #     - MYSQL_USER=nextcloud
-  #   networks:
-  #     - cloud
+  # Metrics
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - metrics
 
-  # cloud:
-  #   image: nextcloud
-  #   restart: always
-  #   ports:
-  #     - 8080:80
-  #   links:
-  #     - db
-  #   volumes:
-  #     - nextcloud:/var/www/html
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=53121
-  #     - MYSQL_PASSWORD=53121
-  #     - MYSQL_DATABASE=nextcloud
-  #     - MYSQL_USER=nextcloud
-  #     - MYSQL_HOST=db
-  #   depends_on:
-  #     - db
-  #   networks:
-  #     - cloud
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    hostname: grafana
+    environment:
+      -  GF_SECURITY_ADMIN_PASSWORD: /run/secrets/gf_admin_password
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    networks:
+      - metrics
+    secrets:
+      - gf_admin_password
