@@ -1,0 +1,26 @@
+# Caddy reverse proxy configuration
+# Access services via subdomains, e.g. http://jellyfin.localhost
+
+heimdall.home {
+	reverse_proxy heimdall:80
+}
+
+jellyfin.home {
+	reverse_proxy jellyfin:8096 {
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+homeassistant.home {
+	reverse_proxy host.docker.internal:8123
+}
+
+prometheus.home {
+	reverse_proxy prometheus:9090
+}
+
+grafana.home {
+	reverse_proxy grafana:3000
+}

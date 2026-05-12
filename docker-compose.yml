@@ -1,12 +1,32 @@
 networks:
+  proxy:
+    driver: bridge
   metrics:
     driver: bridge
 
 secrets:
-   gf_admin_password:
-     file:./secrets/gf_admin_password.txt
+  gf_admin_password:
+    file: ./secrets/gf_admin_password.txt
 
 services:
+  # Reverse Proxy
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - proxy
+      - metrics
+
   # Homelab Dashboard
   heimdall:
     image: lscr.io/linuxserver/heimdall:latest
@@ -16,11 +36,10 @@ services:
       - PGID=1000
       - TZ=Etc/UTC
     volumes:
-      - /path/to/appdata/config:/config
-    ports:
-      - 80:80
-      - 443:443
+      - ./filesystem/config/heimdall:/config
     restart: unless-stopped
+    networks:
+      - proxy
 
   # Services
   jellyfin:
@@ -35,31 +54,34 @@ services:
       - ./filesystem/config/jellyfin:/config
       - ./filesystem/media:/media
     ports:
-      - 8000:8096
-      - 8920:8920 #optional
-      - 7359:7359/udp #optional
-      - 1900:1900/udp #optional
+      - 7359:7359/udp #optional - local network discovery
+      - 1900:1900/udp #optional - DLNA
     restart: unless-stopped
+    networks:
+      - proxy
 
-  filebrowser:
-    image: filebrowser/filebrowser:s6
-    container_name: filebrowser
+  # Home Automation
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    environment:
+      - TZ=Etc/UTC
     volumes:
-      - ./filesystem/config/filebrowser:/config
-      - ./filesystem/media:/srv
-    ports:
-      - 8001:80
-    restart: always
+      - ./filesystem/config/homeassistant:/config
+      - /run/dbus:/run/dbus:ro
+    network_mode: host
+    restart: unless-stopped
+    privileged: true
 
   # Metrics
   prometheus:
     image: prom/prometheus
+    container_name: prometheus
     volumes:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml"
-    ports:
-      - 9090:9090
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    restart: unless-stopped
     networks:
       - metrics
 
@@ -68,11 +90,13 @@ services:
     container_name: grafana
     hostname: grafana
     environment:
-      -  GF_SECURITY_ADMIN_PASSWORD: /run/secrets/gf_admin_password
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/gf_admin_password
     restart: unless-stopped
-    ports:
-      - 3000:3000
     networks:
       - metrics
     secrets:
       - gf_admin_password
+
+volumes:
+  caddy_data:
+  caddy_config:
