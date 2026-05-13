@@ -78,6 +78,7 @@ services:
     container_name: avahi
     network_mode: host
     restart: unless-stopped
+    privileged: true
     volumes:
       - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
 
