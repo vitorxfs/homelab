@@ -91,6 +91,9 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+    ports:
+      - 9090:9090
+      - 9393:9393
     networks:
       - metrics
 
