@@ -73,6 +73,14 @@ services:
     restart: unless-stopped
     privileged: true
 
+  avahi:
+    image: ydkn/avahi:latest
+    container_name: avahi
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ./avahi/services:/etc/avahi/services:ro
+
   # Metrics
   prometheus:
     image: prom/prometheus
