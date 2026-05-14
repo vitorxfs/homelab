@@ -36,7 +36,7 @@ services:
       - PGID=1000
       - TZ=Etc/UTC
     volumes:
-      - ./filesystem/config/heimdall:/config
+      - /home/vitor/.config/heimdall:/config
     restart: unless-stopped
     networks:
       - proxy
@@ -51,8 +51,8 @@ services:
       - TZ=Etc/UTC
       - JELLYFIN_PublishedServerUrl=192.168.0.5 #optional
     volumes:
-      - ./filesystem/config/jellyfin:/config
-      - ./filesystem/media:/media
+      - /home/vitor/.config/jellyfin:/config
+      - /home/vitor/media:/media
     ports:
       - 7359:7359/udp #optional - local network discovery
       - 1900:1900/udp #optional - DLNA
@@ -67,7 +67,7 @@ services:
     environment:
       - TZ=Etc/UTC
     volumes:
-      - ./filesystem/config/homeassistant:/config
+      - /home/vitor/.config/homeassistant:/config
       - /run/dbus:/run/dbus:ro
     network_mode: host
     restart: unless-stopped
@@ -126,6 +126,19 @@ services:
     secrets:
       - gf_admin_password
 
+  # Workflow Automation
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - 5678:5678
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - proxy
+
 volumes:
   caddy_data:
   caddy_config:
+  n8n_data:
