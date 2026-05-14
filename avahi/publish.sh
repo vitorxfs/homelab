@@ -12,7 +12,7 @@ fi
 
 echo "Publicando aliases para $IP:"
 
-HOSTNAMES="heimdall.local jellyfin.local homeassistant.local prometheus.local grafana.local"
+HOSTNAMES="heimdall.local jellyfin.local homeassistant.local prometheus.local grafana.local n8n.local"
 
 for host in $HOSTNAMES; do
   echo "  -> $host"
