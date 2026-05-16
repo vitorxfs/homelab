@@ -74,8 +74,6 @@ services:
     network_mode: host
     restart: unless-stopped
     privileged: true
-    networks:
-      - proxy
 
   avahi:
     build: ./avahi
