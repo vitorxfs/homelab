@@ -76,12 +76,17 @@ Mapeamentos públicos configurados no dashboard do Cloudflare (todos diretos, se
 
 ## Variáveis de ambiente
 
-Arquivo `.env` na raiz do repositório (ignorado pelo git):
+Arquivo `.env` na raiz do repositório (ignorado pelo git). Use `.env.example` como base:
 
 ```env
 CLOUDFLARE_TUNNEL_TOKEN=...
 ANTHROPIC_API_KEY=...
+
+# URL pública do n8n — necessária para webhooks funcionarem via tunnel
+N8N_WEBHOOK_URL=https://n8n.seudominio.com/
 ```
+
+O n8n monta os endereços de webhook usando `localhost` por padrão. Como o acesso é feito via Cloudflare Tunnel, sem `WEBHOOK_URL` os webhooks gerados apontam para um endereço inacessível externamente. `N8N_PROXY_HOPS=1` instrui o n8n a confiar no header `X-Forwarded-For` enviado pelo tunnel.
 
 ## Secrets
 
