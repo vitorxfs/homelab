@@ -3,6 +3,8 @@ networks:
     driver: bridge
   metrics:
     driver: bridge
+  ai:
+    driver: bridge
 
 secrets:
   gf_admin_password:
@@ -67,11 +69,13 @@ services:
     environment:
       - TZ=Etc/UTC
     volumes:
-      - /home/vitor/.config/homeassistant:/config
+      - ./homeassistant/config:/config
       - /run/dbus:/run/dbus:ro
     network_mode: host
     restart: unless-stopped
     privileged: true
+    networks:
+      - proxy
 
   avahi:
     build: ./avahi
@@ -122,6 +126,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/gf_admin_password
     restart: unless-stopped
     networks:
+      - proxy
       - metrics
     secrets:
       - gf_admin_password
@@ -137,6 +142,17 @@ services:
       - n8n_data:/home/node/.n8n
     networks:
       - proxy
+      - ai
+
+  # AI Assistant
+  ai:
+    build: ./ai
+    container_name: ai
+    restart: unless-stopped
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    networks:
+      - ai
 
   # Cloudflare Tunnel — public access without opening router ports
   cloudflared:
