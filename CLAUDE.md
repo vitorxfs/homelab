@@ -48,7 +48,7 @@ O Cloudflare Tunnel elimina a necessidade de abrir portas no roteador. O tráfeg
 | prometheus | `prom/prometheus` | `prometheus:9090` | Coleta de métricas |
 | grafana | `grafana/grafana` | `grafana:3000` | Dashboards de métricas |
 | n8n | `docker.n8n.io/n8nio/n8n` | `n8n:5678` | Automação de workflows |
-| ai | build local | interno | Claude Code como agente |
+| ai | build local | SSH em `:2222` | Claude Code acessível via SSH |
 | cloudflared | `cloudflare/cloudflared` | — | Tunnel Cloudflare para acesso público |
 
 ## Redes Docker
@@ -108,6 +108,25 @@ grafana/dashboards/                       # dashboards exportados
 avahi/services/                           # definições de serviços mDNS
 Caddyfile                                 # rotas do reverse proxy
 ```
+
+## AI — acesso ao Claude Code via SSH
+
+O container `ai` roda um daemon SSH com o Claude Code instalado. Você entra nele via SSH (não via `docker exec`) e executa o `claude` como qualquer CLI.
+
+**Configuração inicial:**
+
+1. Defina `AI_SSH_PASSWORD` no `.env`
+2. (opcional) Adicione sua chave pública em `ai/authorized_keys` para usar auth por chave também. Se não for usar, crie o arquivo vazio: `touch ai/authorized_keys`
+3. `docker compose up -d ai`
+4. Conectar: `ssh -p 2222 claude@<host-do-servidor>` (a senha é a `AI_SSH_PASSWORD`)
+
+**Detalhes:**
+- Usuário: `claude` (não-root)
+- Porta: `2222` no host → `22` no container
+- Autenticação: senha (via `AI_SSH_PASSWORD`) **e/ou** chave pública. Root login desabilitado.
+- A senha é aplicada no boot pelo `entrypoint.sh` via `chpasswd`. Se `AI_SSH_PASSWORD` não estiver definida, o container falha ao iniciar.
+- `ANTHROPIC_API_KEY` é propagada para o `.profile` do usuário pelo entrypoint, ficando disponível em sessões SSH.
+- Volume `ai_home` persiste `/home/claude` (histórico, configs do claude, etc.)
 
 ## Home Assistant — configuração de proxy
 

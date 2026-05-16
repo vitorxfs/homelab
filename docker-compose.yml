@@ -146,13 +146,19 @@ services:
       - proxy
       - ai
 
-  # AI Assistant
+  # AI Assistant — Claude Code acessível via SSH
   ai:
     build: ./ai
     container_name: ai
     restart: unless-stopped
+    ports:
+      - 2222:22
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - SSH_PASSWORD=${AI_SSH_PASSWORD}
+    volumes:
+      - ai_home:/home/claude
+      - ./ai/authorized_keys:/tmp/authorized_keys:ro
     networks:
       - ai
 
@@ -173,3 +179,4 @@ volumes:
   caddy_data:
   caddy_config:
   n8n_data:
+  ai_home:
