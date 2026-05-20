@@ -176,6 +176,9 @@ docker compose up -d
 
 ## Observações importantes
 
-- **Nunca usar caminhos absolutos em volumes** — o repo roda em servidor, não na máquina local. Sempre usar `./caminho/relativo:/container/path`.
+- **Evitar caminhos absolutos em volumes** — o repo roda em servidor, não na máquina local. Para configs e dados gerenciados pelo próprio stack, sempre usar `./caminho/relativo:/container/path`.
+  - **Exceção:** alguns serviços mapeiam diretórios existentes do host de forma intencional para sincronizar/servir dados que vivem fora do repo. Exemplos atuais:
+    - `syncthing` → `/home/vitor/notebooks:/var/syncthing`
+    Esses paths absolutos são propositais — não "corrigir" para paths relativos.
 - O `homeassistant` usa `network_mode: host`, por isso não está na rede `proxy` do Docker e deve ser acessado via `host.docker.internal`.
 - O `avahi` também usa `network_mode: host` e está hardcoded para a interface `wlp1s0` em `avahi/publish.sh` — ajustar se o servidor usar outra interface de rede.

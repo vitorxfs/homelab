@@ -169,7 +169,7 @@ services:
     hostname: syncthing
     environment:
       - PUID=1000
-      - PGID=1000tig
+      - PGID=1000
     volumes:
       - /home/vitor/notebooks:/var/syncthing
     ports:
