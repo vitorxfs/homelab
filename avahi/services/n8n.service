@@ -1,0 +1,10 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name>n8n</name>
+  <service>
+    <type>_http._tcp</type>
+    <port>80</port>
+    <host-name>n8n.local</host-name>
+  </service>
+</service-group>

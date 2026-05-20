@@ -1,0 +1,38 @@
+# Caddy reverse proxy configuration
+# Access services via https://<name>.local
+# Caddy issues certs from its internal CA; install Caddy's root CA on each
+# client device (see `caddy_data` volume: pki/authorities/local/root.crt).
+
+heimdall.local {
+	tls internal
+	reverse_proxy heimdall:80
+}
+
+jellyfin.local {
+	tls internal
+	reverse_proxy jellyfin:8096 {
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+homeassistant.local {
+	tls internal
+	reverse_proxy host.docker.internal:8123
+}
+
+prometheus.local {
+	tls internal
+	reverse_proxy prometheus:9090
+}
+
+grafana.local {
+	tls internal
+	reverse_proxy grafana:3000
+}
+
+n8n.local {
+	tls internal
+	reverse_proxy n8n:5678
+}
