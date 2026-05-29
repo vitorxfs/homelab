@@ -36,3 +36,8 @@ n8n.local {
 	tls internal
 	reverse_proxy n8n:5678
 }
+
+ttrss.local {
+	tls internal
+	reverse_proxy ttrss:80
+}

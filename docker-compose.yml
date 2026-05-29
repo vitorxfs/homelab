@@ -5,6 +5,8 @@ networks:
     driver: bridge
   ai:
     driver: bridge
+  ttrss:
+    driver: bridge
 
 secrets:
   gf_admin_password:
@@ -181,6 +183,38 @@ services:
     networks:
       - proxy
 
+  # RSS Reader (Tiny Tiny RSS)
+  ttrss:
+    image: wangqiru/ttrss:latest
+    container_name: ttrss
+    restart: unless-stopped
+    environment:
+      - SELF_URL_PATH=${TTRSS_SELF_URL_PATH}
+      - DB_HOST=ttrss-db
+      - DB_NAME=ttrss
+      - DB_USER=postgres
+      - DB_PASS=${TTRSS_DB_PASSWORD}
+    volumes:
+      - ttrss_cache:/var/www/cache
+    depends_on:
+      - ttrss-db
+    networks:
+      - proxy
+      - ttrss
+
+  ttrss-db:
+    image: postgres:16-alpine
+    container_name: ttrss-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=ttrss
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${TTRSS_DB_PASSWORD}
+    volumes:
+      - ttrss_db:/var/lib/postgresql/data
+    networks:
+      - ttrss
+
   # Cloudflare Tunnel — public access without opening router ports
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -199,3 +233,5 @@ volumes:
   caddy_config:
   n8n_data:
   ai_home:
+  ttrss_db:
+  ttrss_cache:
